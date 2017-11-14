@@ -7,7 +7,7 @@ Compilación
 Para compilar y ejecutar seguir los siguientes pasos:
 
 ```
-$ gcc -Wall -std=c99 main.c -o gol
+$ make
 $ ./gol
 ```
 
