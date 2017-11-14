@@ -2,84 +2,104 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-void gol_init(/* Recibo un mundo */);
-void gol_print(/* Recibo un mundo */);
-void gol_step(/* Recibo dos mundos */);
-int gol_count_neighbors(/* Recibo un mundo y unas coordenadas */);
-bool gol_get_cell(/* Recibo un mundo y unas coordenadas */);
-void gol_copy(/* Recibo dos mundos */);
+#define GOL_SIZE_X 10
+#define GOL_SIZE_Y 20
+
+void gol_init(bool w[GOL_SIZE_X][GOL_SIZE_Y]);
+void gol_print(bool w[GOL_SIZE_X][GOL_SIZE_Y]);
+void gol_step(bool wa[GOL_SIZE_X][GOL_SIZE_Y], bool wb[GOL_SIZE_X][GOL_SIZE_Y]);
+int gol_count_neighbors(bool w[GOL_SIZE_X][GOL_SIZE_Y], int x, int y);
+bool gol_get_cell(bool w[GOL_SIZE_X][GOL_SIZE_Y], int x, int y);
+void gol_copy(bool dst[GOL_SIZE_X][GOL_SIZE_Y], bool src[GOL_SIZE_X][GOL_SIZE_Y]);
 
 int main()
 {
 	int i = 0;
-	// TODO: Declara dos mundos
+	bool world_a[GOL_SIZE_X][GOL_SIZE_Y];
+	bool world_b[GOL_SIZE_X][GOL_SIZE_Y];
 
-	// TODO: inicializa el mundo
+	gol_init(world_a);
 	do {
 		printf("\033cIteration %d\n", i++);
-		// TODO: Imprime el mundo
-		// TODO: Itera
+		gol_print(world_a);
+		gol_step(world_a, world_b);
 	} while (getchar() != 'q');
 
 	return EXIT_SUCCESS;
 }
 
-void gol_init(/* Recibo un mundo */)
+void gol_init(bool w[GOL_SIZE_X][GOL_SIZE_Y])
 {
-	// TODO: Poner el mundo a false
+	for (int i = 0; i < GOL_SIZE_X; i++)
+		for (int j = 0; j < GOL_SIZE_Y; j++)
+			w[i][j] = false;
 
-	/* TODO: Inicializar con el patrón del glider:
-	 *           . # .
-	 *           . . #
-	 *           # # #
-	 */
+	// Glider
+	w[0][1] = true;
+	w[1][2] = true;
+	w[2][0] = true;
+	w[2][1] = true;
+	w[2][2] = true;
 }
 
-void gol_print(/* Recibo un mundo */)
+void gol_print(bool w[GOL_SIZE_X][GOL_SIZE_Y])
 {
-	// TODO: Imprimir el mundo por consola. Sugerencia:
-	/*
-	 *     . # . . . . . . . .
-	 *     . . # . . . . . . .
-	 *     # # # . . . . . . .
-	 *     . . . . . . . . . .
-	 *     . . . . . . . . . .
-	 *     . . . . . . . . . .
-	 *     . . . . . . . . . .
-	 *     . . . . . . . . . .
-	 *     . . . . . . . . . .
-	 *     . . . . . . . . . .
-	 */
+	for (int i = 0; i < GOL_SIZE_X; i++) {
+		for (int j = 0; j < GOL_SIZE_Y; j++) {
+			printf("%s", w[i][j] ? " #" : " .");
+		}
+		printf("\n");
+	}
+	printf("\n");
 }
 
-void gol_step(/* Recibo dos mundos */)
+void gol_step(bool wa[GOL_SIZE_X][GOL_SIZE_Y], bool wb[GOL_SIZE_X][GOL_SIZE_Y])
 {
-	/*
-	 * TODO:
-	 * - Recorrer el mundo célula por célula comprobando si nace, sobrevive
-	 *   o muere.
-	 *
-	 * - No se puede cambiar el estado del mundo a la vez que se recorre:
-	 *   Usar un mundo auxiliar para guardar el siguiente estado.
-	 *
-	 * - Copiar el mundo auxiliar sobre el mundo principal
-	 */
+	for (int i = 0; i < GOL_SIZE_X; i++) {
+		for (int j = 0; j < GOL_SIZE_Y; j++) {
+			int n = gol_count_neighbors(wa, i, j);
+			wb[i][j] = (wa[i][j] && n == 2) || n == 3;
+		}
+	}
+
+	gol_copy(wa, wb);
 }
 
-int gol_count_neighbors(/* Recibo un mundo y unas coordenadas */)
+int gol_count_neighbors(bool w[GOL_SIZE_X][GOL_SIZE_Y], int x, int y)
 {
-	// Devuelve el número de vecinos
+	int count = 0;
+
+	count += gol_get_cell(w, x - 1, y + 1);
+	count += gol_get_cell(w, x - 0, y + 1);
+	count += gol_get_cell(w, x + 1, y + 1);
+	count += gol_get_cell(w, x - 1, y + 0);
+	count += gol_get_cell(w, x + 1, y + 0);
+	count += gol_get_cell(w, x - 1, y - 1);
+	count += gol_get_cell(w, x - 0, y - 1);
+	count += gol_get_cell(w, x + 1, y - 1);
+
+	return count;
 }
 
-bool gol_get_cell(/* Recibo un mundo y unas coordenadas */)
+bool gol_get_cell(bool w[GOL_SIZE_X][GOL_SIZE_Y], int x, int y)
 {
-	/*
-	 * TODO: Devuelve el estado de la célula de posición indicada
-	 * (¡cuidado con los límites del array!)
-	 */
+	// Fix coords
+	if (x >= GOL_SIZE_X)
+		x = 0;
+	else if (x < 0)
+		x = GOL_SIZE_X - 1;
+
+	if (y >= GOL_SIZE_Y)
+		y = 0;
+	else if (y < 0)
+		y = GOL_SIZE_Y - 1;
+
+	return w[x][y];
 }
 
-void gol_copy(/* Recibo dos mundos */)
+void gol_copy(bool dst[GOL_SIZE_X][GOL_SIZE_Y], bool src[GOL_SIZE_X][GOL_SIZE_Y])
 {
-	// TODO: copia el mundo segundo mundo sobre el primero
+	for (int i = 0; i < GOL_SIZE_X; i++)
+		for (int j = 0; j < GOL_SIZE_Y; j++)
+			dst[i][j] = src[i][j];
 }
