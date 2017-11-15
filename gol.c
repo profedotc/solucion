@@ -2,6 +2,9 @@
 
 #include <stdio.h>
 
+static bool get_cell(const struct gol *gol, int x, int y);
+static int count_neighbors(const struct gol *gol, int x, int y);
+
 void gol_init(struct gol *gol)
 {
 	gol->current_world = 0;
@@ -34,7 +37,7 @@ void gol_step(struct gol *gol)
 {
 	for (int i = 0; i < GOL_SIZE_X; i++) {
 		for (int j = 0; j < GOL_SIZE_Y; j++) {
-			int n = gol_count_neighbors(gol, i, j);
+			int n = count_neighbors(gol, i, j);
 			gol->worlds[!gol->current_world][i][j] =
 				(gol->worlds[gol->current_world][i][j] && n == 2)
 				|| n == 3;
@@ -44,23 +47,23 @@ void gol_step(struct gol *gol)
 	gol->current_world = !gol->current_world;
 }
 
-int gol_count_neighbors(const struct gol *gol, int x, int y)
+static int count_neighbors(const struct gol *gol, int x, int y)
 {
 	int count = 0;
 
-	count += gol_get_cell(gol, x - 1, y + 1);
-	count += gol_get_cell(gol, x - 0, y + 1);
-	count += gol_get_cell(gol, x + 1, y + 1);
-	count += gol_get_cell(gol, x - 1, y + 0);
-	count += gol_get_cell(gol, x + 1, y + 0);
-	count += gol_get_cell(gol, x - 1, y - 1);
-	count += gol_get_cell(gol, x - 0, y - 1);
-	count += gol_get_cell(gol, x + 1, y - 1);
+	count += get_cell(gol, x - 1, y + 1);
+	count += get_cell(gol, x - 0, y + 1);
+	count += get_cell(gol, x + 1, y + 1);
+	count += get_cell(gol, x - 1, y + 0);
+	count += get_cell(gol, x + 1, y + 0);
+	count += get_cell(gol, x - 1, y - 1);
+	count += get_cell(gol, x - 0, y - 1);
+	count += get_cell(gol, x + 1, y - 1);
 
 	return count;
 }
 
-bool gol_get_cell(const struct gol *gol, int x, int y)
+static bool get_cell(const struct gol *gol, int x, int y)
 {
 	// Fix coords
 	if (x >= GOL_SIZE_X)
